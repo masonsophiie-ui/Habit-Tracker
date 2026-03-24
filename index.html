@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Weekly Glow Up ✨</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',sans-serif;background:linear-gradient(135deg,#fff1f5 0%,#fff5f0 50%,#fef9e7 100%);min-height:100vh;padding:32px 16px}
+.wrap{max-width:860px;margin:0 auto}
+h1{text-align:center;font-size:clamp(28px,5vw,42px);font-weight:700;background:linear-gradient(135deg,#e11d6a,#ea580c,#d97706);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:6px}
+.sub{text-align:center;color:#9ca3af;font-size:14px;margin-bottom:32px}
+.card{background:rgba(255,255,255,0.85);backdrop-filter:blur(8px);border-radius:24px;box-shadow:0 20px 60px rgba(0,0,0,0.08);padding:24px 20px;margin-bottom:24px}
+.days-row{display:grid;grid-template-columns:1fr repeat(7,40px);gap:8px;align-items:center;margin-bottom:8px;padding:0 4px}
+.day-label{font-size:12px;font-weight:600;color:#6b7280;text-align:center}
+.habit-row{margin-bottom:12px}
+.habit-grid{display:grid;grid-template-columns:1fr repeat(7,40px);gap:8px;align-items:center;padding:0 4px}
+.habit-name{font-size:13px;font-weight:500;color:#374151;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cb{width:36px;height:36px;border-radius:10px;border:2px solid #e5e7eb;background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.2s;font-size:16px}
+.cb:hover{border-color:#d1d5db;transform:scale(1.08)}
+.cb.checked{border-color:transparent;box-shadow:0 2px 8px rgba(0,0,0,0.15)}
+.progress-bar{height:4px;background:#f3f4f6;border-radius:99px;overflow:hidden;margin-top:6px;margin-left:4px}
+.progress-fill{height:100%;border-radius:99px;transition:width 0.4s ease}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:8px}
+.stat{background:rgba(255,255,255,0.85);border-radius:16px;padding:16px;text-align:center;box-shadow:0 4px 12px rgba(0,0,0,0.06)}
+.stat-icon{font-size:24px;margin-bottom:4px}
+.stat-val{font-size:22px;font-weight:700;color:#1f2937}
+.stat-lbl{font-size:11px;color:#9ca3af}
+.footer{text-align:center;margin-top:24px;padding:16px;background:linear-gradient(135deg,#fce7f3,#ffedd5);border-radius:99px}
+.footer p{font-size:13px;font-weight:600;background:linear-gradient(135deg,#e11d6a,#d97706);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Weekly Glow Up ✨</h1>
+  <p class="sub">Build the life you deserve, one day at a time</p>
+
+  <div class="card">
+    <div class="days-row">
+      <div></div>
+      <div class="day-label">Mon</div>
+      <div class="day-label">Tue</div>
+      <div class="day-label">Wed</div>
+      <div class="day-label">Thu</div>
+      <div class="day-label">Fri</div>
+      <div class="day-label">Sat</div>
+      <div class="day-label">Sun</div>
+    </div>
+    <div id="habitsContainer"></div>
+  </div>
+
+  <div class="stats">
+    <div class="stat"><div class="stat-icon">🔥</div><div class="stat-val" id="weekPct">0%</div><div class="stat-lbl">This Week</div></div>
+    <div class="stat"><div class="stat-icon">⚡</div><div class="stat-val" id="streakVal">0 days</div><div class="stat-lbl">Streak</div></div>
+    <div class="stat"><div class="stat-icon">✨</div><div class="stat-val" id="totalVal">0</div><div class="stat-lbl">Total</div></div>
+  </div>
+
+  <div class="footer"><p>You're doing amazing! Keep going! 💖</p></div>
+</div>
+
+<script>
+const habits = [
+  {id:1, name:'💧 Drink 8 glasses of water', colors:['#38bdf8','#06b6d4'], check:'#38bdf8'},
+  {id:2, name:'🧘‍♀️ 10 min meditation',        colors:['#a855f7','#ec4899'], check:'#a855f7'},
+  {id:3, name:'📚 Read for 20 minutes',        colors:['#fb923c','#f59e0b'], check:'#fb923c'},
+  {id:4, name:'💪 Exercise 30 minutes',        colors:['#4ade80','#22c55e'], check:'#4ade80'},
+  {id:5, name:'🥗 Eat healthy meals',          colors:['#84cc16','#4ade80'], check:'#84cc16'},
+  {id:6, name:'😴 Sleep 8 hours',              colors:['#818cf8','#a855f7'], check:'#818cf8'},
+  {id:7, name:'📱 No phone before bed',        colors:['#fb7185','#f472b6'], check:'#fb7185'},
+  {id:8, name:'✍️ Journal gratitude',          colors:['#fbbf24','#fb923c'], check:'#fbbf24'},
+];
+const days = 7;
+let state = {};
+habits.forEach(h => { state[h.id] = Array(days).fill(false); });
+
+function toggle(hid, day) {
+  state[hid][day] = !state[hid][day];
+  render();
+}
+
+function getPct(hid) {
+  return Math.round((state[hid].filter(Boolean).length / days) * 100);
+}
+
+function render() {
+  const container = document.getElementById('habitsContainer');
+  container.innerHTML = habits.map(h => {
+    const pct = getPct(h.id);
+    const boxes = state[h.id].map((checked, d) => `
+      <div class="cb ${checked?'checked':''}"
+           style="${checked ? `background:linear-gradient(135deg,${h.colors[0]},${h.colors[1]})` : ''}"
+           onclick="toggle(${h.id},${d})">
+        ${checked ? '<span style="color:white;font-size:14px">✓</span>' : ''}
+      </div>`).join('');
+    return `
+      <div class="habit-row">
+        <div class="habit-grid">
+          <div class="habit-name">${h.name}</div>
+          ${boxes}
+        </div>
+        <div class="progress-bar">
+          <div class="progress-fill" style="width:${pct}%;background:linear-gradient(90deg,${h.colors[0]},${h.colors[1]})"></div>
+        </div>
+      </div>`;
+  }).join('');
+
+  const total = habits.reduce((a,h) => a + state[h.id].filter(Boolean).length, 0);
+  const avgPct = Math.round(habits.reduce((a,h) => a + getPct(h.id), 0) / habits.length);
+  document.getElementById('weekPct').textContent = avgPct + '%';
+  document.getElementById('totalVal').textContent = total;
+}
+
+render();
+</script>
+</body>
+</html>
